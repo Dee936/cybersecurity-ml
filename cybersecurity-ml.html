@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybersecurity Threat Detection — ML Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --border: #e2e0d8;
+    --text-primary: #181818;
+    --text-secondary: #5a5a5a;
+    --text-muted: #9a9890;
+    --accent: #1a3a5c;
+    --accent-light: #e8eef5;
+    --accent-mid: #4a7fad;
+    --tag-bg: #ededea;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-primary); line-height: 1.6; font-size: 16px; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(245,245,240,0.93); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); z-index: 100;
+    padding: 0 2rem; height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { font-family: var(--serif); font-size: 1.15rem; color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; letter-spacing: 0.07em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+
+  .hero { padding: 140px 2rem 80px; max-width: 920px; margin: 0 auto; animation: fadeUp 0.7s ease both; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-light); color: var(--accent); font-size: 0.73rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; padding: 0.35rem 0.9rem; border-radius: 100px; margin-bottom: 1.8rem; }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; background: var(--accent-mid); border-radius: 50%; }
+  .hero h1 { font-family: var(--serif); font-size: clamp(2.4rem, 5vw, 3.8rem); line-height: 1.15; margin-bottom: 1rem; }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub { font-size: 1.05rem; color: var(--text-secondary); max-width: 600px; line-height: 1.8; margin-bottom: 2.2rem; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.82rem; color: var(--text-muted); }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-meta strong { color: var(--text-secondary); }
+
+  .divider { max-width: 920px; margin: 0 auto; padding: 0 2rem; border: none; border-top: 1px solid var(--border); }
+
+  section { max-width: 920px; margin: 0 auto; padding: 64px 2rem; animation: fadeUp 0.5s ease both; }
+  .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+  .section-title { font-family: var(--serif); font-size: clamp(1.5rem, 3vw, 2.1rem); color: var(--text-primary); margin-bottom: 1.4rem; line-height: 1.2; }
+  .section-body { font-size: 1rem; color: var(--text-secondary); line-height: 1.85; max-width: 700px; }
+
+  /* OVERVIEW */
+  .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.4rem; margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .oi-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .oi-value { font-size: 0.96rem; color: var(--text-primary); font-weight: 500; line-height: 1.55; }
+
+  /* PIPELINE */
+  .steps { margin-top: 2.4rem; display: flex; flex-direction: column; }
+  .step { display: grid; grid-template-columns: 48px 1fr; gap: 1.2rem; padding: 1.6rem 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 36px; height: 36px; background: var(--accent-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 1rem; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .step-content h4 { font-size: 0.97rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.35rem; }
+  .step-content p { font-size: 0.91rem; color: var(--text-secondary); line-height: 1.78; }
+  .step-tag { display: inline-block; background: var(--tag-bg); color: var(--text-secondary); font-size: 0.71rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 4px; margin-top: 0.5rem; letter-spacing: 0.03em; }
+
+  /* MODELS */
+  .models-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 2rem; }
+  .model-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; }
+  .model-card .mc-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .model-card .mc-name { font-family: var(--serif); font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.6rem; }
+  .model-card .mc-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; }
+  .model-card .mc-tag { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 0.71rem; font-weight: 600; padding: 0.25rem 0.7rem; border-radius: 4px; margin-top: 0.8rem; }
+
+  /* METRICS */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+  .metric-card { background: var(--accent-light); border: 1px solid #c5d6e8; border-radius: 14px; padding: 1.6rem 1.2rem; text-align: center; }
+  .metric-name { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-mid); margin-bottom: 0.5rem; }
+  .metric-def { font-size: 0.82rem; color: #2a5a80; line-height: 1.55; }
+
+  /* TECH */
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .tech-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1.5rem; transition: border-color 0.2s, transform 0.2s; }
+  .tech-card:hover { border-color: var(--accent-mid); transform: translateY(-2px); }
+  .tc-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .tc-name { font-size: 0.98rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .tc-desc { font-size: 0.81rem; color: var(--text-secondary); line-height: 1.5; }
+
+  /* OUTCOMES */
+  .outcomes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .outcome-card { background: var(--accent-light); border: 1px solid #c5d6e8; border-radius: 14px; padding: 1.6rem; }
+  .oc-icon { font-size: 1.5rem; margin-bottom: 0.7rem; }
+  .oc-title { font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 0.4rem; }
+  .oc-desc { font-size: 0.84rem; color: #2a5a80; line-height: 1.6; }
+
+  footer { border-top: 1px solid var(--border); padding: 2.5rem 2rem; text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+  footer strong { color: var(--text-secondary); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 640px) {
+    .models-grid, .metrics-grid, .overview-card { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">CyberShield ML</span>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#models">Models</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="#results">Results</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Machine Learning Project</div>
+  <h1>Detecting threats<br>before they <em>strike.</em></h1>
+  <p class="hero-sub">A machine learning system that analyzes real-time network traffic data to identify and classify cyber attacks — using Random Forest and SVM models trained on real-world threat patterns.</p>
+  <div class="hero-meta">
+    <span>🔐 <strong>Cybersecurity · ML</strong></span>
+    <span>🐍 <strong>Python · Scikit-learn</strong></span>
+    <span>📊 <strong>Classification · Threat Detection</strong></span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<section id="about">
+  <div class="section-label">Overview</div>
+  <h2 class="section-title">What is CyberShield ML?</h2>
+  <p class="section-body">Cyber attacks are growing in frequency and sophistication. This project tackles the problem of automated threat detection by training machine learning models on network traffic data to identify malicious activity — reducing the need for manual analysis and enabling faster, more accurate threat response.</p>
+  <div class="overview-card">
+    <div class="overview-item">
+      <div class="oi-label">Problem</div>
+      <div class="oi-value">Traditional rule-based systems fail to detect novel cyber threats. Manual analysis is too slow and error-prone at scale.</div>
+    </div>
+    <div class="overview-item">
+      <div class="oi-label">Solution</div>
+      <div class="oi-value">Train ML models on labeled network traffic data to automatically classify connections as normal or a specific type of attack.</div>
+    </div>
+    <div class="overview-item">
+      <div class="oi-label">Input</div>
+      <div class="oi-value">Network traffic features — packet size, protocol type, connection duration, flags, byte counts, and more.</div>
+    </div>
+    <div class="overview-item">
+      <div class="oi-label">Output</div>
+      <div class="oi-value">Classified threat label — Normal, DoS, Probe, R2L, U2R — with evaluation metrics.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="pipeline">
+  <div class="section-label">Workflow</div>
+  <h2 class="section-title">ML Pipeline</h2>
+  <p class="section-body">The system follows a structured machine learning pipeline — from raw network data to final threat classification — with careful attention to preprocessing and feature quality.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Data Collection</h4>
+        <p>Network traffic dataset loaded containing labeled records of normal connections and various attack types. Each record captures dozens of connection-level features.</p>
+        <span class="step-tag">Pandas · CSV Dataset</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Data Preprocessing</h4>
+        <p>Raw data cleaned and prepared — handling missing values, encoding categorical features like protocol type and service, and normalizing numerical features to a common scale.</p>
+        <span class="step-tag">Pandas · Label Encoding · StandardScaler</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Feature Extraction</h4>
+        <p>Relevant features selected from the dataset that are most informative for distinguishing attack types from normal traffic — reducing noise and improving model performance.</p>
+        <span class="step-tag">Feature Selection · Scikit-learn</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Model Training</h4>
+        <p>Two ML models trained on the processed dataset — Random Forest and Support Vector Machine (SVM). The dataset is split into training and testing sets for fair evaluation.</p>
+        <span class="step-tag">Random Forest · SVM · Train/Test Split</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h4>Threat Classification</h4>
+        <p>Trained models classify each network connection record into its correct category — Normal traffic or one of several attack types — in real time.</p>
+        <span class="step-tag">Multi-class Classification</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <h4>Model Evaluation</h4>
+        <p>Performance evaluated using four key metrics — Accuracy, Precision, Recall, and F1-score — to measure how well each model detects threats without false alarms.</p>
+        <span class="step-tag">Accuracy · Precision · Recall · F1-score</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="models">
+  <div class="section-label">Algorithms</div>
+  <h2 class="section-title">ML Models Used</h2>
+  <p class="section-body">Two powerful classification algorithms were trained and compared to find the best approach for cyber threat detection.</p>
+  <div class="models-grid">
+    <div class="model-card">
+      <div class="mc-icon">🌲</div>
+      <div class="mc-name">Random Forest</div>
+      <div class="mc-desc">An ensemble learning method that builds multiple decision trees and merges their results. Handles high-dimensional data well, resistant to overfitting, and naturally ranks feature importance — making it highly effective for network intrusion detection.</div>
+      <div class="mc-tag">Ensemble · Decision Trees · Feature Importance</div>
+    </div>
+    <div class="model-card">
+      <div class="mc-icon">📐</div>
+      <div class="mc-name">Support Vector Machine</div>
+      <div class="mc-desc">A powerful classifier that finds the optimal hyperplane to separate threat classes in high-dimensional feature space. Particularly effective when clear margins between normal and attack traffic exist, with strong generalization ability.</div>
+      <div class="mc-tag">SVM · Hyperplane · Kernel Trick</div>
+    </div>
+  </div>
+
+  <div style="margin-top:2.5rem;">
+    <div class="section-label">Evaluation Metrics</div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-name">Accuracy</div>
+        <div class="metric-def">Percentage of total predictions the model got correctly out of all records.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">Precision</div>
+        <div class="metric-def">Of all connections flagged as threats, how many were actually threats — minimizes false alarms.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">Recall</div>
+        <div class="metric-def">Of all actual threats, how many did the model successfully catch — minimizes missed attacks.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">F1-Score</div>
+        <div class="metric-def">Harmonic mean of Precision and Recall — the overall balanced measure of model performance.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="tech">
+  <div class="section-label">Technology</div>
+  <h2 class="section-title">Tech Stack</h2>
+  <p class="section-body">Built entirely in Python using industry-standard data science and machine learning libraries.</p>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tc-role">Language</div>
+      <div class="tc-name">Python</div>
+      <div class="tc-desc">Core language for data processing, model training, and evaluation scripting.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-role">Data Processing</div>
+      <div class="tc-name">Pandas</div>
+      <div class="tc-desc">Dataset loading, cleaning, transformation, and feature engineering on network traffic records.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-role">ML Library</div>
+      <div class="tc-name">Scikit-learn</div>
+      <div class="tc-desc">Random Forest and SVM model building, training, prediction, and evaluation metrics.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-role">Numerical Computing</div>
+      <div class="tc-name">NumPy</div>
+      <div class="tc-desc">Array operations, mathematical computations, and data manipulation under the hood.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-role">Visualization</div>
+      <div class="tc-name">Matplotlib</div>
+      <div class="tc-desc">Plotting confusion matrices, performance comparisons, and feature importance charts.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-role">Environment</div>
+      <div class="tc-name">Jupyter Notebook</div>
+      <div class="tc-desc">Interactive development environment for iterative model building and result visualization.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="results">
+  <div class="section-label">Outcomes</div>
+  <h2 class="section-title">Results & Key Takeaways</h2>
+  <p class="section-body">Both models demonstrated effective threat detection performance, with strong results across all evaluation metrics on the test dataset.</p>
+  <div class="outcomes-grid">
+    <div class="outcome-card">
+      <div class="oc-icon">✅</div>
+      <div class="oc-title">Effective Detection</div>
+      <div class="oc-desc">Both Random Forest and SVM successfully classified network traffic into normal and attack categories with strong overall accuracy.</div>
+    </div>
+    <div class="outcome-card">
+      <div class="oc-icon">⚖️</div>
+      <div class="oc-title">Balanced Performance</div>
+      <div class="oc-desc">High F1-scores across threat classes indicate the models balanced precision and recall — catching threats without excessive false positives.</div>
+    </div>
+    <div class="outcome-card">
+      <div class="oc-icon">🌲</div>
+      <div class="oc-title">Random Forest Advantage</div>
+      <div class="oc-desc">Random Forest provided feature importance rankings, offering interpretability into which network features most strongly indicate malicious activity.</div>
+    </div>
+    <div class="outcome-card">
+      <div class="oc-icon">🔍</div>
+      <div class="oc-title">Multi-Class Classification</div>
+      <div class="oc-desc">System successfully distinguished between multiple attack types — not just normal vs attack — enabling more targeted threat response.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Cybersecurity Threat Detection via ML</strong> &middot; Pragadeeshwari S G T &middot; B.Tech CSE, SRMIST</p>
+  <p style="margin-top:0.5rem;">Built with Python · Pandas · Scikit-learn · Random Forest · SVM</p>
+</footer>
+
+</body>
+</html>
